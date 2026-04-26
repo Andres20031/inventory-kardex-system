@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import cors from 'cors';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import mongoose from 'mongoose';
@@ -18,6 +19,7 @@ app.use(cors({
   ],
   credentials: true
 }));
+
 // Conectar MongoDB
 await mongoose.connect(process.env.MONGODB_URI);
 console.log('✅ MongoDB conectado');
