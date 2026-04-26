@@ -5,7 +5,9 @@ import { setContext } from '@apollo/client/link/context';
 import App from './App.jsx';
 import './index.css';
 
-const httpLink = createHttpLink({ uri: '/graphql' });
+const httpLink = createHttpLink({ 
+  uri: import.meta.env.VITE_GRAPHQL_URI || '/graphql'
+});
 
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('token');
