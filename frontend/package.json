@@ -22,10 +22,6 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",
-    "@rollup/wasm-node": "latest",
-    "vite": "^5.1.6"
-  },
-  "overrides": {
-    "rollup": "npm:@rollup/wasm-node"
+    "vite": "^4.5.3"
   }
 }
