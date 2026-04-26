@@ -1,0 +1,142 @@
+# ⚙️ Sistema de Inventario y Kardex
+
+Prueba técnica — Stack: Node.js + GraphQL + MongoDB + React
+
+---
+
+## 🗂️ Estructura del Proyecto
+
+```
+inventario-kardex/
+├── backend/          ← Node.js + Apollo GraphQL + MongoDB
+└── frontend/         ← React + Apollo Client + Recharts
+```
+
+---
+
+## ⚙️ Requisitos Previos
+
+- Node.js v18 o superior
+- MongoDB corriendo localmente en `mongodb://localhost:27017`
+- npm o yarn
+
+---
+
+## 🚀 Instalación y Ejecución
+
+### 1. Backend
+
+```bash
+cd backend
+npm install
+
+# Crea el archivo .env (ya viene con los valores por defecto para local)
+# Asegúrate de que MongoDB esté corriendo
+
+# Poblar la base de datos con datos de prueba
+npm run seed
+
+# Iniciar el servidor de desarrollo
+npm run dev
+# → Servidor en http://localhost:4000/graphql
+```
+
+### 2. Frontend
+
+```bash
+cd frontend
+npm install
+
+# Iniciar la aplicación
+npm run dev
+# → App en http://localhost:3000
+```
+
+---
+
+## 🔑 Credenciales de Prueba
+
+| Rol      | Email                    | Contraseña   |
+|----------|--------------------------|--------------|
+| Admin    | admin@kardex.com         | admin123     |
+| Operador | operador@kardex.com      | operador123  |
+
+---
+
+## 🏗️ Arquitectura y Decisiones Técnicas
+
+### Backend
+- **Apollo Server 4 + Express**: GraphQL moderno con middleware de Express para máxima flexibilidad.
+- **Mongoose + Transacciones**: Cada movimiento de kardex usa sesiones de MongoDB para garantizar atomicidad (actualiza producto Y crea movimiento en una sola transacción).
+- **JWT**: Token en header Authorization. El contexto de Apollo inyecta el usuario decodificado en cada resolver.
+- **Precio Promedio Ponderado**: Calculado en cada entrada: `(stockAnterior × precioPromedio + cantidad × precioNuevo) / stockNuevo`.
+- **Soft Delete**: Los productos se marcan como `activo: false` en vez de eliminarse, permitiendo restauración.
+
+### Frontend
+- **Apollo Client**: Caché InMemoryCache con `fetchPolicy: 'network-only'` en listados para garantizar datos frescos tras mutaciones.
+- **React Hook Form**: Formularios con validación ligera sin re-renders innecesarios.
+- **React Router v6**: Rutas protegidas con componentes wrapper según autenticación y rol.
+- **Context API**: Estado global de sesión sin Redux (suficiente para esta escala).
+- **Recharts**: Gráficos de barras y pie para dashboard y reportes.
+
+### Base de Datos
+```
+usuarios        → autenticación y auditoría
+productos       → catálogo con stock y precios
+movimientos     → kardex (cada entrada/salida con stock antes/después)
+```
+
+---
+
+## 📋 Queries GraphQL de Ejemplo
+
+```graphql
+# Login
+mutation {
+  autenticarUsuario(input: { email: "admin@kardex.com", password: "admin123" }) {
+    token
+    usuario { id nombre rol }
+  }
+}
+
+# Listar productos
+query {
+  productos(pagina: 1, limite: 10) {
+    productos { id codigo nombre stockActual bajoStock }
+    total paginas
+  }
+}
+
+# Registrar entrada
+mutation {
+  crearMovimiento(input: {
+    productoId: "ID_AQUI"
+    tipo: ENTRADA
+    cantidad: 10
+    precioUnitario: 15000
+    observacion: "Compra proveedor"
+  }) {
+    id stockAntes stockDespues
+  }
+}
+
+# Dashboard
+query {
+  dashboardStats {
+    totalProductos productosBajoStock valorTotalInventario
+  }
+}
+```
+
+---
+
+## 🔒 Permisos por Rol
+
+| Operación              | Admin | Operador |
+|------------------------|-------|----------|
+| Ver productos          | ✅    | ✅       |
+| Crear/editar producto  | ✅    | ✅       |
+| Eliminar producto      | ✅    | ❌       |
+| Crear movimientos      | ✅    | ✅       |
+| Crear usuarios         | ✅    | ❌       |
+| Ver reportes           | ✅    | ✅       |
