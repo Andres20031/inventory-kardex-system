@@ -10,6 +10,14 @@ import { getUsuarioDesdeToken } from './utils/auth.js';
 const app = express();
 app.use(express.json());
 
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://inventory-kardex-system.vercel.app',
+    /\.vercel\.app$/
+  ],
+  credentials: true
+}));
 // Conectar MongoDB
 await mongoose.connect(process.env.MONGODB_URI);
 console.log('✅ MongoDB conectado');
